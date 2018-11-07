@@ -43,11 +43,11 @@ plt.axis("off")
 ![png](https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/reshaped_image.png) <!--notebook-skip-line-->
 
 
-As we can see the first and second dimensions have changed. However the image can't be identified as house anylonger. In order to understand what happened, let's have a look at the image below.
+As we can see the first and second dimensions have changed. However the image can't be identified as cat anylonger. In order to understand what happened, let's have a look at the image below.
 
 <img src="https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/reshape.png" style="width:700px;height:300px;">
 
-While the number of rows and columns changed, the layout of the underlying data did not. The pixel values that have been in one row are still in one row. This means for instance that pixel 10 in the upper right corder ends up in the middle of the image instead of the upper left corner. Consequently contextual information gets lost, because the relative position of pixel values is not the same anymore. As one can imagine a neural network would not be able to classify such an image as house. `Transpose` instead changes both: the dimensions but also the corresponding pixel values.
+While the number of rows and columns changed, the layout of the underlying data did not. The pixel values that have been in one row are still in one row. This means for instance that pixel 10 in the upper right corder ends up in the middle of the image instead of the upper left corner. Consequently contextual information gets lost, because the relative position of pixel values is not the same anymore. As one can imagine a neural network would not be able to classify such an image as cat. `Transpose` instead changes both: the dimensions but also the corresponding pixel values.
 
 
 ```python
