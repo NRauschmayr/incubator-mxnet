@@ -56,7 +56,7 @@ plt.imshow(transposed)
 plt.axis("off")
 ```
 
-![png](https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/reshaped_image.png) <!--notebook-skip-line-->
+![png](https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/transposed_image.png) <!--notebook-skip-line-->
 
 
 As we can see width and height changed, by rotating pixel values by 90 degrees. Transpose does the following:
