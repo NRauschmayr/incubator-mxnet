@@ -12,7 +12,7 @@ import numpy as np
 
 
 ```python
-img_array = mpimg.imread('images/cat.png')
+img_array = mpimg.imread('https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/cat.png')
 plt.imshow(img_array)
 plt.axis("off")
 print (img_array.shape)
@@ -45,7 +45,7 @@ plt.axis("off")
 
 As we can see the first and second dimensions have changed. However the image can't be identified as house anylonger. In order to understand what happened, let's have a look at the image below.
 
-<img src="images/reshape.png" style="width:700px;height:300px;">
+<img src="https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/reshape.png" style="width:700px;height:300px;">
 
 While the number of rows and columns changed, the layout of the underlying data did not. The pixel values that have been in one row are still in one row. This means for instance that pixel 10 in the upper right corder ends up in the middle of the image instead of the upper left corner. Consequently contextual information gets lost, because the relative position of pixel values is not the same anymore. As one can imagine a neural network would not be able to classify such an image as house. `Transpose` instead changes both: the dimensions but also the corresponding pixel values.
 
@@ -61,7 +61,7 @@ plt.axis("off")
 
 As we can see width and height changed, by rotating pixel values by 90 degrees. Transpose does the following:
 
-<img src="images/transpose.png" style="width:700px;height:300px;">
+<img src="https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/transpose.png" style="width:700px;height:300px;">
 
 As shown in the diagram, pixel values that have been in the first row are now in the first column.
 
