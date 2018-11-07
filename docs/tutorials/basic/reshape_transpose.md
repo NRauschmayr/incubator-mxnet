@@ -64,6 +64,42 @@ As we can see width and height changed, by rotating pixel values by 90 degrees. 
 <img src="https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/transpose.png" style="width:700px;height:300px;">
 
 As shown in the diagram, pixel values that have been in the first row are now in the first column.
+## When to transpose with MXNet
+In this chapter we discuss when transpose and reshape is used in MXNet. 
+#### Channel first for images
+Images are usually stored in the format height, wight, channel. When working with convolutional layers, MXNet expects the layout to be `NCHW` (batch, channel, height, width). Consequently, images need to be transposed to have the right format. For instance, you may have a function like the following:
+``` 
+def transform(data, label): 
+     return data.astype(np.float32).transpose((2,0,1))/255.0, float(label)
+```
+Images may also be stored as 1 dimensional vector, e.g. instead of `[28,28,1]` you may have `[784,1]`. In this situation you need to perform a reshape e.g. `ndarray.reshape((1,28,28))`
+
+
+#### TNC layout for RNN
+When working with LSTM or GRU layers, the default layout for input and ouput tensors has to be `TNC` (sequence length, batch size, and feature dimensions). For instance in the following network the input goes into a 1 dimensional convolution layer and whose output goes into a GRU cell. Here the tensors would mismatch, because `Conv1D` takes data as `NCT`, but GRU  expects it to be `NTC`. 
+```
+class model(mx.gluon.nn.Block):
+    def __init__(self):
+        super(model, self).__init__()
+        
+        self.sequential1 = mx.gluon.nn.Sequential()
+        self.sequential2 = mx.gluon.nn.Sequential()
+        self.sequential1 = mx.gluon.nn.Sequential()
+        self.sequential2 = mx.gluon.nn.Sequential()
+        with self.name_scope():    
+            self.sequential1.add(mx.gluon.nn.Conv1D(196, kernel_size=15, strides=4)) 
+            self.sequential1.add(mx.gluon.nn.BatchNorm(axis=1))
+            self.sequential1.add(mx.gluon.nn.Activation(activation='relu')) 
+            self.sequential1.add(mx.gluon.nn.Dropout(0.8)) 
+
+            self.sequential2.add(mx.gluon.rnn.GRU(128, layout='NTC'))
+```
+To ensure that the forward pass does not crash, we need to do a tensor transpose (see below):
+```
+    def forward(self, X):
+        output = self.sequential1(X) 
+        return self.sequential2(output.transpose((0,2,1)))
+```
 
 #### Check out the Numpy documentation for more details
 <https://docs.scipy.org/doc/numpy-1.15.1/reference/generated/numpy.reshape.html>
