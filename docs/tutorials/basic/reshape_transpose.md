@@ -103,7 +103,7 @@ print inpout_data.shape, reshaped.shape
 ```
 The reshape function of [MXNet's NDArray API](https://mxnet.incubator.apache.org/api/python/ndarray/ndarray.html?highlight=reshape#mxnet.ndarray.NDArray.reshape) allows even more advanced transformations: For instance: with -2 you copy all/remainder of the input dimensions to the output shape. With -3 reshape will use the product of two consecutive dimensions of the input shape as the output dim.    
 
-#### Check out the Numpy documentation for more details
+#### Check out the MXNet documentation for more details
 https://mxnet.incubator.apache.org/api/python/ndarray/ndarray.html?highlight=reshape#mxnet.ndarray.NDArray.reshape
 http://mxnet.incubator.apache.org/test/api/python/ndarray.html#mxnet.ndarray.transpose
 <!-- INSERT SOURCE DOWNLOAD BUTTONS -->
