@@ -101,10 +101,7 @@ input_data = mx.random.uniform(shape=(20,100,batch_size))
 reshaped = input_data.reshape(-1,batch_size)
 print inpout_data.shape, reshaped.shape 
 ```
-The reshape function of [MXNet's NDArray API](https://mxnet.incubator.apache.org/api/python/ndarray/ndarray.html?highlight=reshape#mxnet.ndarray.NDArray.reshape) allows even more advanced transformations: For instance: 
-
-    -2 copy all/remainder of the input dimensions to the output shape
-    -3 use the product of two consecutive dimensions of the input shape as the output dim.    
+The reshape function of [MXNet's NDArray API](https://mxnet.incubator.apache.org/api/python/ndarray/ndarray.html?highlight=reshape#mxnet.ndarray.NDArray.reshape) allows even more advanced transformations: For instance: with -2 you copy all/remainder of the input dimensions to the output shape. With -3 reshape will use the product of two consecutive dimensions of the input shape as the output dim.    
 
 #### Check out the Numpy documentation for more details
 https://mxnet.incubator.apache.org/api/python/ndarray/ndarray.html?highlight=reshape#mxnet.ndarray.NDArray.reshape
