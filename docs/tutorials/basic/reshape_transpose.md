@@ -32,7 +32,7 @@ Now lets reshape the image in order to exchange width and height dimension.
 
 
 ```python
-reshaped = img_array.reshape(200,210,3)
+reshaped = img_array.reshape((200,210,3))
 print (reshaped.shape)
 plt.imshow(reshaped)
 plt.axis("off")
@@ -47,11 +47,13 @@ As we can see the first and second dimensions have changed. However the image ca
 
 <img src="https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/reshape.png" style="width:700px;height:300px;">
 
-While the number of rows and columns changed, the layout of the underlying data did not. The pixel values that have been in one row are still in one row. This means for instance that pixel 10 in the upper right corder ends up in the middle of the image instead of the upper left corner. Consequently contextual information gets lost, because the relative position of pixel values is not the same anymore. As one can imagine a neural network would not be able to classify such an image as cat. `Transpose` instead changes both: the dimensions but also the corresponding pixel values.
+While the number of rows and columns changed, the layout of the underlying data did not. The pixel values that have been in one row are still in one row. This means for instance that pixel 10 in the upper right corder ends up in the middle of the image instead of the upper left corner. Consequently contextual information gets lost, because the relative position of pixel values is not the same anymore. As one can imagine a neural network would not be able to classify such an image as cat. 
+
+`Transpose` instead changes the layout of the underlying data.
 
 
 ```python
-transposed = img_array.transpose(1,0,2)
+transposed = img_array.transpose((1,0,2))
 plt.imshow(transposed)
 plt.axis("off")
 ```
@@ -63,47 +65,45 @@ As we can see width and height changed, by rotating pixel values by 90 degrees. 
 
 <img src="https://raw.githubusercontent.com/NRauschmayr/web-data/tutorial_transpose_reshape/mxnet/doc/tutorials/basic/transpose_reshape/transpose.png" style="width:700px;height:300px;">
 
-As shown in the diagram, pixel values that have been in the first row are now in the first column.
-## When to transpose with MXNet
+As shown in the diagram, the axis have been flipped: pixel values that have been in the first row are now in the first column.
+## When to transpose/reshape with MXNet
 In this chapter we discuss when transpose and reshape is used in MXNet. 
 #### Channel first for images
-Images are usually stored in the format height, wight, channel. When working with convolutional layers, MXNet expects the layout to be `NCHW` (batch, channel, height, width). Consequently, images need to be transposed to have the right format. For instance, you may have a function like the following:
+Images are usually stored in the format height, wight, channel. When working with [convolutional](https://mxnet.incubator.apache.org/api/python/gluon/nn.html#mxnet.gluon.nn.Conv1D) layers, MXNet expects the layout to be `NCHW` (batch, channel, height, width). MXNet uses this layout because of performance reasons on the GPU. Consequently, images need to be transposed to have the right format. For instance, you may have a function like the following:
 ``` 
 def transform(data, label): 
-     return data.astype(np.float32).transpose((2,0,1))/255.0, float(label)
+     return data.astype(np.float32).transpose((2,0,1))/255.0, np.float32(label)
 ```
-Images may also be stored as 1 dimensional vector, e.g. instead of `[28,28,1]` you may have `[784,1]`. In this situation you need to perform a reshape e.g. `ndarray.reshape((1,28,28))`
+Images may also be stored as 1 dimensional vector for example in byte packed datasets. For instance, instead of `[28,28,1]` you may have `[784,1]`. In this situation you need to perform a reshape e.g. `ndarray.reshape((1,28,28))`
 
 
 #### TNC layout for RNN
-When working with LSTM or GRU layers, the default layout for input and ouput tensors has to be `TNC` (sequence length, batch size, and feature dimensions). For instance in the following network the input goes into a 1 dimensional convolution layer and whose output goes into a GRU cell. Here the tensors would mismatch, because `Conv1D` takes data as `NCT`, but GRU  expects it to be `NTC`. 
+When working with [LSTM](https://mxnet.incubator.apache.org/api/python/gluon/rnn.html#mxnet.gluon.rnn.LSTM) or [GRU](https://mxnet.incubator.apache.org/api/python/gluon/rnn.html#mxnet.gluon.rnn.GRU) layers, the default layout for input and ouput tensors has to be `TNC` (sequence length, batch size, and feature dimensions). For instance in the following network the input goes into a 1 dimensional convolution layer and whose output goes into a GRU cell. Here the tensors would mismatch, because `Conv1D` takes data as `NCT`, but GRU  expects it to be `NTC`. To ensure that the forward pass does not crash, we need to do a tensor transpose. We can do this by defining a ```HybridLambda```.
 ```
-class model(mx.gluon.nn.Block):
-    def __init__(self):
-        super(model, self).__init__()
-        
-        self.sequential1 = mx.gluon.nn.Sequential()
-        self.sequential2 = mx.gluon.nn.Sequential()
-        self.sequential1 = mx.gluon.nn.Sequential()
-        self.sequential2 = mx.gluon.nn.Sequential()
-        with self.name_scope():    
-            self.sequential1.add(mx.gluon.nn.Conv1D(196, kernel_size=15, strides=4)) 
-            self.sequential1.add(mx.gluon.nn.BatchNorm(axis=1))
-            self.sequential1.add(mx.gluon.nn.Activation(activation='relu')) 
-            self.sequential1.add(mx.gluon.nn.Dropout(0.8)) 
+network = gluon.nn.HybridSequential()
+with network.name_scope():
+       network.add(gluon.nn.Conv1D(196, kernel_size=2, strides=1))
+       network.add(gluon.nn.HybridLambda(lambda F, x: F.transpose(x, (0, 2, 1))))
+       network.add(gluon.rnn.GRU(128))
 
-            self.sequential2.add(mx.gluon.rnn.GRU(128, layout='NTC'))
+network.hybridize()
+network.initialize(mx.init.Xavier(), ctx=mx.cpu())
+a = mx.random.uniform(shape=(1,100,1000))
+network(a)
+
+ 
 ```
-To ensure that the forward pass does not crash, we need to do a tensor transpose (see below):
+#### Advanced reshaping with MXNet ndarrays
+It is sometimes useful to automatically infer the shape of tensors. Especially when you deal with very deep neural networks, it may not always be clear what the shape of a tensor is after a specific layer. For instance you may want the tensor to be two-dimensional where one dimension is the known batch_size. With ```mx.nd.array(-1, batch_size)``` the first dimension will be automatically inferred. Here a simplified example:
 ```
-    def forward(self, X):
-        output = self.sequential1(X) 
-        return self.sequential2(output.transpose((0,2,1)))
+batch_size = 100
+input_data = mx.random.uniform(shape=(20,100,batch_size))
+reshaped = input_data.reshape(-1,batch_size)
+print inpout_data.shape, reshaped.shape 
 ```
+The reshape function of [MXNet's NDArray API](https://mxnet.incubator.apache.org/api/python/ndarray/ndarray.html?highlight=reshape#mxnet.ndarray.NDArray.reshape) allows even more advanced transformations: For instance: -2 copy all/remainder of the input dimensions to the output shape, -3 use the product of two consecutive dimensions of the input shape as the output dim.    
 
 #### Check out the Numpy documentation for more details
-<https://docs.scipy.org/doc/numpy-1.15.1/reference/generated/numpy.reshape.html>
-
-<https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.transpose.html>
-
+https://mxnet.incubator.apache.org/api/python/ndarray/ndarray.html?highlight=reshape#mxnet.ndarray.NDArray.reshape
+http://mxnet.incubator.apache.org/test/api/python/ndarray.html#mxnet.ndarray.transpose
 <!-- INSERT SOURCE DOWNLOAD BUTTONS -->
