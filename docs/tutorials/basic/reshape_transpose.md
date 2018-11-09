@@ -24,9 +24,9 @@ print (img_array.shape)
 
 
 The color image has the following properties:
-    - width: 210 pixels
-    - height: 200 pixels
-    - colors: 3 (RGB)
+* width: 210 pixels
+* height: 200 pixels
+* colors: 3 (RGB)
 
 Now lets reshape the image in order to exchange width and height dimension.
 
